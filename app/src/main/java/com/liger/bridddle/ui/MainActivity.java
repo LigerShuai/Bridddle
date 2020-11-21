@@ -1,14 +1,11 @@
-package com.liger.bridddle.ui.activities;
-
-import androidx.appcompat.app.AppCompatActivity;
+package com.liger.bridddle.ui;
 
 import android.os.Bundle;
 
 import com.liger.bridddle.R;
+import com.liger.bridddle.base.BaseActivity;
 
-public class MainActivity extends AppCompatActivity {
-
-    private final String TAG = getClass().getName();
+public class MainActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

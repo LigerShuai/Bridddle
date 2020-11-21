@@ -11,13 +11,12 @@ import android.webkit.WebViewClient;
 
 import com.blankj.utilcode.util.SPStaticUtils;
 import com.liger.bridddle.R;
+import com.liger.bridddle.base.BaseActivity;
 import com.liger.bridddle.constant.ApiConstants;
 import com.liger.bridddle.model.Token;
 import com.liger.bridddle.net.NetManager;
-import com.liger.bridddle.ui.activities.MainActivity;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Observer;
@@ -28,9 +27,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
  * @author Liger
  * @date 2020/11/19 15:49
  */
-public class OauthActivity extends AppCompatActivity {
-
-    private final String TAG = getClass().getName();
+public class OauthActivity extends BaseActivity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
