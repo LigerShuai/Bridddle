@@ -1,5 +1,7 @@
 package com.liger.bridddle.ui;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.webkit.WebResourceRequest;
@@ -7,10 +9,12 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.blankj.utilcode.util.SPStaticUtils;
 import com.liger.bridddle.R;
 import com.liger.bridddle.constant.ApiConstants;
 import com.liger.bridddle.model.Token;
 import com.liger.bridddle.net.NetManager;
+import com.liger.bridddle.ui.activities.MainActivity;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -46,26 +50,26 @@ public class OauthActivity extends AppCompatActivity {
     private class MyWebViewClient extends WebViewClient {
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-            view.canGoBack();
-            return super.shouldOverrideUrlLoading(view, request);
-        }
-
-        @Override
-        public void onPageFinished(WebView view, String url) {
-            Log.d(TAG, "onPageFinished: " + url);
-            getCode(url);
-            super.onPageFinished(view, url);
+            String url = request.getUrl().toString();
+            if (url.contains("code")) {
+                //重定向网页，参数中包含了code
+//                view.stopLoading();
+                String code = url.substring(url.lastIndexOf("=") + 1);
+                getToken(code);
+//                skipMain(url);
+                return true;
+            }
+            view.loadUrl(url);
+            Log.d(TAG, "load url: " + url);
+            return false;
         }
     }
 
-    private void getCode(String url) {
-        String code = "";
-        if (url.contains("code")) {
-            code = url.substring(url.lastIndexOf("=") + 1);
-            Log.d(TAG, "getCode: " + code);
-            getToken(code);
-        }
-
+    private void skipMain(String url) {
+        String substring = url.substring(0, url.indexOf("?"));
+        Uri uri = Uri.parse(substring);
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+        startActivity(intent);
     }
 
     private void getToken(String code) {
@@ -82,7 +86,10 @@ public class OauthActivity extends AppCompatActivity {
 
                     @Override
                     public void onNext(@NonNull Token token) {
-                        Log.d(TAG, "onNext: " + token);
+                        if (token.getToken().isEmpty()) return;
+                        SPStaticUtils.put("code", token.getToken());
+                        startActivity(new Intent(OauthActivity.this, MainActivity.class));
+                        Log.d(TAG, "onNext: " + token.toString());
                     }
 
                     @Override
