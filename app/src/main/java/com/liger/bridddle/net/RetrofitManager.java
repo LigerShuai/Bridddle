@@ -15,24 +15,28 @@ public class RetrofitManager {
 
     public final String TAG = getClass().getName();
     private Retrofit mRetrofit;
+    private volatile static RetrofitManager instance;
 
-    private RetrofitManager() {
-        init();
+    private RetrofitManager(String baseUrl) {
+        init(baseUrl);
     }
 
-    private static final class NetManagerHolder {
-        static final RetrofitManager INSTANCE = new RetrofitManager();
-    }
-
-    public static RetrofitManager getInstance() {
-        return NetManagerHolder.INSTANCE;
+    public static RetrofitManager getInstance(String baseUrl) {
+        if (instance == null) {
+            synchronized (RetrofitManager.class) {
+                if (instance == null) {
+                    instance = new RetrofitManager(baseUrl);
+                }
+            }
+        }
+        return instance;
     }
 
     public <T> T create(Class<T> service) {
         return mRetrofit.create(service);
     }
 
-    public void init() {
+    public void init(String baseUrl) {
         // 初始化 OkHttpClient
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
 //                .addInterceptor(new HttpLoggingInterceptor())
@@ -41,7 +45,7 @@ public class RetrofitManager {
 
         // 初始化 Retrofit
         mRetrofit = new Retrofit.Builder()
-                .baseUrl(ApiConstants.BASE_URL)
+                .baseUrl(baseUrl)
                 .addConverterFactory(GsonConverterFactory.create())        //添加 Gson 适配器
                 .addCallAdapterFactory(RxJava3CallAdapterFactory.create()) //添加 RxJava 适配器
                 .client(okHttpClient)

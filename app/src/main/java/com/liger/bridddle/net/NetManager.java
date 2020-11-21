@@ -16,18 +16,41 @@ public class NetManager {
 
     public final String TAG = getClass().getName();
     private ApiService mApiService;
+    private volatile static NetManager instance;
 
-    private NetManager() {
-        mApiService = RetrofitManager.getInstance().create(ApiService.class);
+    private NetManager(String baseUrl) {
+        mApiService = RetrofitManager.getInstance(baseUrl).create(ApiService.class);
     }
 
-    private static final class NetManagerHolder {
-        static final NetManager INSTANCE = new NetManager();
+    public static NetManager getInstance(String baseUrl) {
+        if (instance == null) {
+            synchronized (NetManager.class) {
+                if (instance == null) {
+                    instance = new NetManager(baseUrl);
+                }
+            }
+        }
+        return instance;
     }
 
     public static NetManager getInstance() {
-        return NetManagerHolder.INSTANCE;
+        if (instance == null) {
+            synchronized (NetManager.class) {
+                if (instance == null) {
+                    instance = new NetManager(ApiConstants.DATA_BASE_URL);
+                }
+            }
+        }
+        return instance;
     }
+
+//    private static final class NetManagerHolder {
+//        static final NetManager INSTANCE = new NetManager();
+//    }
+//
+//    public static NetManager getInstance() {
+//        return NetManagerHolder.INSTANCE;
+//    }
 
     public Observable<String> getCode() {
         Map<String, String> map = new HashMap<>();

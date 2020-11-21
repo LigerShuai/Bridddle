@@ -1,13 +1,13 @@
 package com.liger.bridddle.ui;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ProgressBar;
 
 import com.blankj.utilcode.util.SPStaticUtils;
 import com.liger.bridddle.R;
@@ -29,6 +29,8 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
  */
 public class OauthActivity extends BaseActivity {
 
+    private ProgressBar mProgressBar;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,6 +39,7 @@ public class OauthActivity extends BaseActivity {
     }
 
     private void initView() {
+        mProgressBar = findViewById(R.id.progress_bar);
         WebView myWebView = findViewById(R.id.webview);
         WebSettings webSettings = myWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
@@ -48,12 +51,11 @@ public class OauthActivity extends BaseActivity {
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
             String url = request.getUrl().toString();
+            //重定向网页，参数中包含了code
             if (url.contains("code")) {
-                //重定向网页，参数中包含了code
 //                view.stopLoading();
                 String code = url.substring(url.lastIndexOf("=") + 1);
                 getToken(code);
-//                skipMain(url);
                 return true;
             }
             view.loadUrl(url);
@@ -62,16 +64,9 @@ public class OauthActivity extends BaseActivity {
         }
     }
 
-    private void skipMain(String url) {
-        String substring = url.substring(0, url.indexOf("?"));
-        Uri uri = Uri.parse(substring);
-        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-        startActivity(intent);
-    }
-
     private void getToken(String code) {
         if (code.isEmpty()) return;
-        NetManager.getInstance()
+        NetManager.getInstance(ApiConstants.OAUTH_BASE_URL)
                 .getToken(ApiConstants.CLIENT_ID, ApiConstants.CLIENT_SECRET, code)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
