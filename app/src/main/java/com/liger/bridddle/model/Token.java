@@ -11,19 +11,19 @@ import org.jetbrains.annotations.NotNull;
 public class Token {
 
     @SerializedName("access_token")
-    private String token;
+    private String accessToken;
 
     @SerializedName("token_type")
-    private String type;
+    private String tokenType;
 
     private String scope;
 
-    public String getToken() {
-        return token;
+    public String getAccessToken() {
+        return accessToken;
     }
 
-    public String getType() {
-        return type;
+    public String getTokenType() {
+        return tokenType;
     }
 
     public String getScope() {
@@ -34,8 +34,8 @@ public class Token {
     @Override
     public String toString() {
         return "Token{" +
-                "token='" + token + '\'' +
-                ", type='" + type + '\'' +
+                "token='" + accessToken + '\'' +
+                ", type='" + tokenType + '\'' +
                 ", scope='" + scope + '\'' +
                 '}';
     }

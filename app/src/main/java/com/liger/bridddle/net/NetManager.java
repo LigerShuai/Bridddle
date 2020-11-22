@@ -1,10 +1,9 @@
 package com.liger.bridddle.net;
 
-import com.liger.bridddle.constant.ApiConstants;
+import com.liger.bridddle.api.ApiService;
+import com.liger.bridddle.api.UserService;
 import com.liger.bridddle.model.Token;
-
-import java.util.HashMap;
-import java.util.Map;
+import com.liger.bridddle.model.User;
 
 import io.reactivex.rxjava3.core.Observable;
 
@@ -15,62 +14,30 @@ import io.reactivex.rxjava3.core.Observable;
 public class NetManager {
 
     public final String TAG = getClass().getName();
-    private ApiService mApiService;
     private volatile static NetManager instance;
+    private RetrofitManager mRetrofitManager;
 
-    private NetManager(String baseUrl) {
-        mApiService = RetrofitManager.getInstance(baseUrl).create(ApiService.class);
-    }
-
-    public static NetManager getInstance(String baseUrl) {
-        if (instance == null) {
-            synchronized (NetManager.class) {
-                if (instance == null) {
-                    instance = new NetManager(baseUrl);
-                }
-            }
-        }
-        return instance;
+    private NetManager() {
+        mRetrofitManager = RetrofitManager.getInstance();
     }
 
     public static NetManager getInstance() {
         if (instance == null) {
             synchronized (NetManager.class) {
                 if (instance == null) {
-                    instance = new NetManager(ApiConstants.DATA_BASE_URL);
+                    instance = new NetManager();
                 }
             }
         }
         return instance;
     }
 
-//    private static final class NetManagerHolder {
-//        static final NetManager INSTANCE = new NetManager();
-//    }
-//
-//    public static NetManager getInstance() {
-//        return NetManagerHolder.INSTANCE;
-//    }
-
-    public Observable<String> getCode() {
-        Map<String, String> map = new HashMap<>();
-        map.put("client_id", ApiConstants.CLIENT_ID);
-        map.put("scope", "public+upload");
-        return mApiService.getCode(map);
-    }
-
-    /*public Map<String, String> setLoginParams(Map<String, String> map) {
-        map.put("client_id", ApiConstants.CLIENT_ID);
-        map.put("client_secret", ApiConstants.CLIENT_SECRET);
-        return map;
-    }
-
-    public Observable<Token> getToken(Map<String, String> map) {
-        return mApiService.getToken(map);
-    }*/
-
     public Observable<Token> getToken(String clientId, String clientSecret, String code) {
-        return mApiService.getToken(clientId, clientSecret, code);
+        return mRetrofitManager.create(ApiService.class).getToken(clientId, clientSecret, code);
+    }
+
+    public Observable<User> getUser(String header) {
+        return mRetrofitManager.create(UserService.class).getUser(header);
     }
 
 

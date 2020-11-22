@@ -1,5 +1,6 @@
-package com.liger.bridddle.net;
+package com.liger.bridddle.api;
 
+import com.liger.bridddle.constant.ApiConstants;
 import com.liger.bridddle.model.Token;
 
 import java.util.Map;
@@ -15,6 +16,8 @@ import retrofit2.http.QueryMap;
  * @date 2020/11/18 17:18
  */
 public interface ApiService {
+
+    String BASE_URL = ApiConstants.OAUTH_BASE_URL;
 
     @GET("oauth/authorize")
     Observable<String> getCode(@QueryMap Map<String, String> map);

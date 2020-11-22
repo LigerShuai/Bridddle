@@ -9,12 +9,12 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 
-import com.blankj.utilcode.util.SPStaticUtils;
 import com.liger.bridddle.R;
 import com.liger.bridddle.base.BaseActivity;
 import com.liger.bridddle.constant.ApiConstants;
 import com.liger.bridddle.model.Token;
 import com.liger.bridddle.net.NetManager;
+import com.liger.bridddle.utils.Util;
 
 import androidx.annotation.Nullable;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -30,6 +30,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 public class OauthActivity extends BaseActivity {
 
     private ProgressBar mProgressBar;
+    private WebView mWebView;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -40,11 +41,19 @@ public class OauthActivity extends BaseActivity {
 
     private void initView() {
         mProgressBar = findViewById(R.id.progress_bar);
-        WebView myWebView = findViewById(R.id.webview);
-        WebSettings webSettings = myWebView.getSettings();
+        mWebView = findViewById(R.id.webview);
+        WebSettings webSettings = mWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
-        myWebView.loadUrl(ApiConstants.OAUTH_URL);
-        myWebView.setWebViewClient(new MyWebViewClient());
+        oAuth();
+    }
+
+    private void oAuth() {
+        if (Util.isLogin()) {
+            jumpToMain();
+            return;
+        }
+        mWebView.loadUrl(ApiConstants.OAUTH_URL);
+        mWebView.setWebViewClient(new MyWebViewClient());
     }
 
     private class MyWebViewClient extends WebViewClient {
@@ -55,7 +64,7 @@ public class OauthActivity extends BaseActivity {
             if (url.contains("code")) {
 //                view.stopLoading();
                 String code = url.substring(url.lastIndexOf("=") + 1);
-                getToken(code);
+                login(code);
                 return true;
             }
             view.loadUrl(url);
@@ -64,9 +73,9 @@ public class OauthActivity extends BaseActivity {
         }
     }
 
-    private void getToken(String code) {
+    private void login(String code) {
         if (code.isEmpty()) return;
-        NetManager.getInstance(ApiConstants.OAUTH_BASE_URL)
+        NetManager.getInstance()
                 .getToken(ApiConstants.CLIENT_ID, ApiConstants.CLIENT_SECRET, code)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -78,9 +87,9 @@ public class OauthActivity extends BaseActivity {
 
                     @Override
                     public void onNext(@NonNull Token token) {
-                        if (token.getToken().isEmpty()) return;
-                        SPStaticUtils.put("code", token.getToken());
-                        startActivity(new Intent(OauthActivity.this, MainActivity.class));
+                        if (token.getAccessToken().isEmpty()) return;
+                        Util.saveLoginState(token.getAccessToken(), token.getTokenType());
+                        jumpToMain();
                         Log.d(TAG, "onNext: " + token.toString());
                     }
 
@@ -94,6 +103,11 @@ public class OauthActivity extends BaseActivity {
                         Log.d(TAG, "onComplete: ");
                     }
                 });
+    }
+
+    private void jumpToMain() {
+        startActivity(new Intent(OauthActivity.this, MainActivity.class));
+        finish();
     }
 
 }

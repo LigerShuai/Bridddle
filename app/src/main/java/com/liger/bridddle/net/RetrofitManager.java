@@ -1,6 +1,6 @@
 package com.liger.bridddle.net;
 
-import com.liger.bridddle.constant.ApiConstants;
+import java.lang.reflect.Field;
 
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
@@ -14,42 +14,54 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class RetrofitManager {
 
     public final String TAG = getClass().getName();
-    private Retrofit mRetrofit;
     private volatile static RetrofitManager instance;
 
-    private RetrofitManager(String baseUrl) {
-        init(baseUrl);
+    private RetrofitManager() {
     }
 
-    public static RetrofitManager getInstance(String baseUrl) {
+    public static RetrofitManager getInstance() {
         if (instance == null) {
             synchronized (RetrofitManager.class) {
                 if (instance == null) {
-                    instance = new RetrofitManager(baseUrl);
+                    instance = new RetrofitManager();
                 }
             }
         }
         return instance;
     }
 
-    public <T> T create(Class<T> service) {
-        return mRetrofit.create(service);
-    }
-
-    public void init(String baseUrl) {
-        // 初始化 OkHttpClient
-        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+    private OkHttpClient getOkHttpClient() {
+        return new OkHttpClient.Builder()
 //                .addInterceptor(new HttpLoggingInterceptor())
 //                .addInterceptor(new LogInterceptor())
                 .build();
+    }
 
-        // 初始化 Retrofit
-        mRetrofit = new Retrofit.Builder()
+    private Retrofit getRetrofit(String baseUrl) {
+        return new Retrofit.Builder()
                 .baseUrl(baseUrl)
                 .addConverterFactory(GsonConverterFactory.create())        //添加 Gson 适配器
                 .addCallAdapterFactory(RxJava3CallAdapterFactory.create()) //添加 RxJava 适配器
-                .client(okHttpClient)
+                .client(getOkHttpClient())
                 .build();
+    }
+
+    public <T> T create(Class<T> serviceClass) {
+        String baseUrl = "";
+        try {
+            Field field = serviceClass.getField("BASE_URL");
+            try {
+                baseUrl = (String) field.get(field);
+
+                baseUrl = (String) field.get(field);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+
+        return getRetrofit(baseUrl).create(serviceClass);
     }
 
 }
